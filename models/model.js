@@ -2,11 +2,13 @@ const db = require('../data/Db')
 module.exports ={
     find,
     findById,
+    allTasks,
     findTask,
     findResource,
     addProject,
     addTask, 
-    addResource
+    addResource,
+    allResources
 }
 
 function find(){
@@ -22,6 +24,16 @@ function findById(id) {
 function findTask(project_id){
     return db('task').where({project_id})
 
+}
+
+function allTasks(){
+    return db("task")
+    .join("projects", "projects.id", "task.project_id")
+     .select("projects.name", "projects.description", "task.*")
+}
+
+function allResources(){
+    return db("resources")
 }
 
 function findResource(project_id){

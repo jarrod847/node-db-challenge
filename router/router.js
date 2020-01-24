@@ -14,6 +14,17 @@ router.get('/', async(req,res,next)=>{
     }
 })
 
+router.get('/task', (req, res) => {
+    projects.allTasks()
+    .then(task => {
+        res.json(task);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({ message: "failed to get task"})
+    })
+})
+
 router.get('/:id/tasks', async(req,res,next)=>{
     try{
       const { id } = req.params
@@ -66,7 +77,18 @@ router.post('/:id/resources', (req, res) => {
             console.log(error)
             res.status(500).json({message: 'Could not create that resource'})
           })
-      })
+})
+
+router.get('/resources', (req, res) => {
+  projects.allResources()
+  .then(resource => {
+      res.json(resource);
+  })
+  .catch(err => {
+      console.log(err);
+      res.status(500).json({ message: "failed to get resources"})
+  })
+})
 
 
 
