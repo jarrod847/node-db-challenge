@@ -1,75 +1,68 @@
-exports.up = function(knex) {
-    return knex.schema
-      .createTable('projects', tbl => {
-        tbl.increments();
+exports.up = async function(knex) {
+    await knex.schema.createTable('projects', (table)=>{
+        table.increments()
+        table.string('name')
+          .notNullable()
+        table.string('description')
+        table.boolean('completed')
+          .notNullable()
+          .defaultTo(0)
+    })
 
-        tbl
-          .string('name', 128)
+    await knex.schema.createTable('resources', (table)=>{
+        table.increments()
+        table.string('name')
+          .notNullable()
           .unique()
-          .notNullable();
+        table.string('description')
+        table.integer('project_id')
+            .notNullable()
+            .references('id')
+            .inTable('projects')
+    })
 
-        tbl.string('description', 128);
+    await knex.schema.createTable('task', (table)=>{
+        table.increments()
+        table.string('description')
+            .notNullable()
+        table.string('notes')
+        table.boolean('completed')
+            .defaultTo(0)
+        table.integer('project_id')
+            .notNullable()
+            .references('id')
+            .inTable('projects')
+    })
 
-        tbl.boolean('completed').notNullable();
+    await knex.schema.createTable('project_resources', (table)=>{
+        table.integer('project_id')
+        .notNullable()
+        .references('id')
+        .inTable('projects')
+        table.integer('resource_id')
+            .notNullable()
+            .references('id')
+            .inTable('resources')
+        table.primary(['project_id', 'resource_id'])
       })
 
-      .createTable('resources', tbl => {
-        tbl.increments();
-
-        tbl
-          .string('name', 128)
-          .unique()
-          .notNullable();
-
-        tbl.string('description', 128);
-      })
-
-      .createTable('tasks', tbl => {
-        tbl.increments();
-
-        tbl.string('description', 255).notNullable();
-
-        tbl.string('notes', 128).notNullable();
-
-        tbl.boolean('completed').notNullable();
-
-        tbl
-          .integer('project_id')
-          .unsigned()
-          .notNullable()
-          .references('id')
-          .inTable('projects')
-          .onDelete('RESTRICT')
-          .onUpdate('CASCADE');
-      })
-
-      .createTable('project_resources', tbl => {
-        tbl.increments();
-
-        tbl
-          .integer('project_id')
-          .unsigned()
-          .notNullable()
-          .references('id')
-          .inTable('projects')
-          .onDelete('RESTRICT')
-          .onUpdate('CASCADE');
-
-        tbl
-          .integer('resource_id')
-          .unsigned()
-          .notNullable()
-          .references('id')
-          .inTable('resources')
-          .onDelete('RESTRICT')
-          .onUpdate('CASCADE');
+      await knex.schema.createTable('project_tasks', (table)=>{
+        table.integer('project_id')
+        .notNullable()
+        .references('id')
+        .inTable('projects')
+        table.integer('task_id')
+            .notNullable()
+            .references('id')
+            .inTable('tasks')
+        table.primary(['project_id', 'task_id'])
       })
   };
 
-  exports.down = function(knex) {
-    return knex.schema
-      .dropTableIfExists('project_resources')
-      .dropTableIfExists('tasks')
-      .dropTableIfExists('resources')
-      .dropTableIfExists('projects') 
+  exports.down = async function(knex) {
+    await knex.schema.dropTableIfExists('project_tasks')
+    await knex.schema.dropTableIfExists('project_resources')
+    await knex.schema.dropTableIfExists('task')
+    await knex.schema.dropTableIfExists('resources')
+    await knex.schema.dropTableIfExists('projects')
   };
